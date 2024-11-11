@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maui Restaurants</title>
+    <link rel="icon" type="image/svg+xml" href="images/icon.svg">
+    <link rel="stylesheet" href="styles.css">
+    <script defer src ="/scripts/header.js"></script>
+    <script src="/scripts/restaurantCards.js"></script>
+
+
+</head>
+<body>
+    <!-- Header -->
+    <header></header>
+    
+    <!-- Navbar -->
+    <nav class></nav>
+
+    <!-- Main -->
+    <h1 class = "pageTitle">Best Restaurants</h1>
+    <main class="restaurants">
+        <% restaurants.forEach(restaurant => { %>
+            <div class="restaurantItem" data-id="<%= restaurant.id %>">
+                <img src="<%= restaurant.photo %>" alt="<%= restaurant.name %>">
+                <div class="restaurantInfo">
+                    <h3><%= restaurant.name %></h3>
+                    <p>Phone: <%= restaurant.phone %></p>
+                    <p>Address: <%= restaurant.address %></p>
+                </div>
+                <button class ="deleteButton">X</button>
+            </div>
+        <% }); %>
+    </main>
+
+    <footer></footer>
+</body>
+</html>
