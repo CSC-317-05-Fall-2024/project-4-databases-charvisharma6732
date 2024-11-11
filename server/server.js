@@ -1,7 +1,7 @@
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { getRestaurants, getRestaurant, createRestaurant, deleteRestaurant } from './data/restaurants.js'; 
+import { getRestaurants, getRestaurant, createRestaurant, deleteRestaurant, getReviewsForRestaurant } from './data/restaurants.js'; 
 import { backendRouter } from './routes/api.js';
 
 const app = express();
@@ -40,7 +40,8 @@ app.get('/restaurants', async (req, res) => {
 app.get('/restaurants/:id', async (req, res) => {
     const ID = parseInt(req.params.id);
     try {
-        const restaurant = await getRestaurant(ID);  // Fetch restaurant by ID
+        const restaurant = await getRestaurant(ID);  
+        const reviews = await getReviewsForRestaurant(ID);
 
         if (restaurant) {
             res.render('restaurant-details', { restaurant });

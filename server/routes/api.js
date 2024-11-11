@@ -13,6 +13,7 @@ router.get('/restaurants', async (req, res) => {
     }
 });
 
+//Get Restaurant by ID
 router.get('/restaurants/:id', async (req, res) => {
     const { id } = req.params;
     try {
@@ -64,6 +65,17 @@ router.delete('/restaurants/:id', async (req, res) => {
     }
 });
 
+//Get Restaurant review by id
+router.get('/restaurants/:id/reviews', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const reviews = await getReviewsForRestaurant(parseInt(id));
+        res.json(reviews);
+    } catch (error) {
+        console.error(`Error fetching reviews for restaurant with ID ${id}:`, error);
+        res.status(500).send('Internal Server Error');
+    }
+});
 
 export {router as backendRouter};
 

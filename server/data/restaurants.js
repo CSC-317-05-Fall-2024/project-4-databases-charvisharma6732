@@ -49,3 +49,13 @@ export const deleteRestaurant = async (id) => {
         throw error;
     }
 };
+
+export const getReviewsForRestaurant = async (id) => {
+    try {
+        const result = await pool.query('SELECT * FROM reviews WHERE restaurant_id = $1', [id]);
+        return result.rows;
+    } catch (error) {
+        console.error(`Error getting reviews for restaurant with ID ${id}:`, error);
+        throw error;
+    }
+};

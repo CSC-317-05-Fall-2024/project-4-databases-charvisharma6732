@@ -3,10 +3,15 @@ import { pool } from './database.js';
 
 const dropTables = async () => {
     try {
-        const dropTablesQuery = `
+        const dropReviewsTableQuery = `
+        DROP TABLE IF EXISTS restaurants;
+    `;
+        const dropRestaurantsTableQuery = `
             DROP TABLE IF EXISTS restaurants;
         `;
-        await pool.query(dropTablesQuery);
+        await pool.query(dropReviewsTableQuery);
+        await pool.query(dropRestaurantsTableQuery);
+
     } catch (error) {
         console.log("Error dropping tables", error);
     }
@@ -14,16 +19,27 @@ const dropTables = async () => {
 
 const createTables = async () => {
     try {
-        const createTablesQuery = `
+        const createRestaurantsTableQuery = `
         CREATE TABLE IF NOT EXISTS restaurants (
             id SERIAL PRIMARY KEY,
             name VARCHAR(100) NOT NULL,
             phone VARCHAR(20) NOT NULL,
             address VARCHAR(200) NOT NULL,
             photo VARCHAR(200) NOT NULL
+        );`
+
+        const createReviewsTableQuery = `
+        CREATE TABLE IF NOT EXISTS reviews (
+            id SERIAL PRIMARY KEY,
+            rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+            content TEXT,
+            restaurant_id INTEGER REFERENCES restaurants(id) ON DELETE CASCADE
+        
         );
+        
     `;
-    await pool.query(createTablesQuery);
+    await pool.query(createRestaurantsTableQuery);
+    await pool.query(createReviewsTableQuery);
     } catch (error) {
         console.log("Error creating table", error);
     }
@@ -31,7 +47,7 @@ const createTables = async () => {
 
 const insertData = async () => {
     try {
-        const insertDataQuery = `
+        const restaurantInsertDataQuery = `
             INSERT INTO restaurants (name, phone, address, photo) VALUES
             ($1, $2, $3, $4),
             ($5, $6, $7, $8),
@@ -50,8 +66,16 @@ const insertData = async () => {
             'South Shore Grill', '(901)-851-1630', '9670 Shoko Street', 'images/restaurant5.jpeg',
             'Kimo Kapalua', '(931)-878-6541', '826 Fellows Road', 'images/restaurant6.jpeg'
         ];
+        await pool.query(restaurantInsertDataQuery, values);
 
-        await pool.query(insertDataQuery, values);
+        const reviewInsertQuery = `
+        INSERT INTO reviews (rating, content, restaurant_id) VALUES 
+        (5, 'Amazing food and atmosphere!', 1),
+        (4, 'Great service and tasty dishes.', 1),
+        (3, 'Good food but a bit pricey.', 2),
+        (5, 'Absolutely loved it! Highly recommended.', 2);
+    `;
+        await pool.query(reviewInsertQuery);
     } catch (error) {
         console.log("Error inserting data:", error);
     }
@@ -61,7 +85,7 @@ const setup = async () => {
     await dropTables();
     await createTables();
     await insertData();
-    console.log("Database setup finished");
+    console.log("Database setup properly");
 }
 
 setup();
