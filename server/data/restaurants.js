@@ -1,98 +1,51 @@
-// Fill this in
-let restaurantData = [
-    {
-        "id": 0,
-        "name": "Hali'imaile",
-        "phone": "(945)-222-8764",
-        "address": "666 Cherry Road",
-        "photo": "images/restaurant1.jpeg",
-    },
-    {
-        "id": 1,
-        "name": "Lahaina Grill",
-        "phone": "(945)-828-7413",
-        "address": "826 Moa Street",
-        "photo": "images/restaurant2.jpeg",
-    },
-    {
-        "id": 2,
-        "name": "Kama's Fish",
-        "phone": "(970)-286-3947",
-        "address": "84 Wethel Road",
-        "photo": "images/restaurant3.jpeg",
-    },
-    {
-        "id": 3,
-        "name": "Nalau's House",
-        "phone": "(918)-554-3903",
-        "address": "9244 Choka Drive",
-        "photo": "images/restaurant4.jpeg",
-    },
-    {
-        "id": 4,
-        "name": "South Shore Grill",
-        "phone": "(901)-851-1630",
-        "address": "9670 Shoko Street",
-        "photo": "images/restaurant5.jpeg",
-    },
-    {
-        "id": 5,
-        "name": "Kimo Kapalua",
-        "phone": "(931)-878-6541",
-        "address": "826 Fellows Road",
-        "photo": "images/restaurant6.jpeg",
-    },
-
-    
 
 
-    
-];
-export default { restaurantData };
+import { pool } from '../config/database.js';
 
-//lastID becomes max ID in restaurantData array
-let lastId = restaurantData.length > 0 ? Math.max(...restaurantData.map(r => r.id)) : -1; 
-let deletedIDs = [];
-
-const getNextId = () => {
-    if(deletedIDs.length > 0)
-    {
-        return deletedIDs.pop();
+// Get a list of all restaurants
+export const getRestaurants = async () => {
+    try {
+        const result = await pool.query('SELECT * FROM restaurants');
+        return result.rows;
+    } catch (error) {
+        console.error("Error getting restaurants", error);
+        throw error;
     }
-    lastId += 1;
-    return lastId;
-}
-
-// Get a list of restaurants
-const getRestaurants = () => {
-    return restaurantData;
 };
 
-
-// Get a restaurant by id
-const getRestaurant = (id) => {
-    const restaurant = restaurantData.find((r) => r.id === id)
-    return restaurant || null;
+// Get details for a specific restaurant by ID
+export const getRestaurant = async (id) => {
+    try {
+        const result = await pool.query('SELECT * FROM restaurants WHERE id = $1', [id]);
+        return result.rows[0] || null;
+    } catch (error) {
+        console.error(`Error getting restaurant with ID ${id}:`, error);
+        throw error;
+    }
 };
 
 // Create a new restaurant entry
-const createRestaurant = (newRestaurant) => {
-    const id = getNextId();
-    const restaurant = {id, ...newRestaurant};
-    restaurantData.push(restaurant);
-    return restaurant;
-};
-
-// Delete a restaurant by id
-const deleteRestaurant = (id) => {
-    const index = restaurantData.findIndex((r) => r.id === id)
-    if(index !== -1)
-    {
-        restaurantData.splice(index, 1);
-        deletedIDs.push(id);
-        return true;
+export const createRestaurant = async (newRestaurant) => {
+    const { name, phone, address, photo } = newRestaurant;
+    try {
+        const result = await pool.query(
+            'INSERT INTO restaurants (name, phone, address, photo) VALUES ($1, $2, $3, $4) RETURNING *',
+            [name, phone, address, photo]
+        );
+        return result.rows[0];
+    } catch (error) {
+        console.error("Error creating restaurant", error);
+        throw error;
     }
-    return false;
 };
 
-export { getRestaurants, getRestaurant, createRestaurant, deleteRestaurant };
+// Delete a restaurant by ID
+export const deleteRestaurant = async (id) => {
+    try {
+        const result = await pool.query('DELETE FROM restaurants WHERE id = $1 RETURNING *', [id]);
+        return result.rowCount > 0;  // Returns true if a row was deleted
+    } catch (error) {
+        console.error(`Error deleting restaurant with ID ${id}:`, error);
+        throw error;
+    }
+};

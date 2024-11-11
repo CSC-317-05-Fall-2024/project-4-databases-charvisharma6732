@@ -1,57 +1,66 @@
 import express from 'express';
-import restaurants, { deleteRestaurant, getRestaurants, createRestaurant, getRestaurant} from '../data/restaurants.js';
+import { deleteRestaurant, getRestaurants, createRestaurant, getRestaurant} from '../data/restaurants.js';
 const router = express.Router();
 
 //Get All Restaurants
-router.get('/restaurants', (req, res) => {
-    const allRestaurants = getRestaurants();
-    res.json(allRestaurants);
+router.get('/restaurants', async (req, res) => {
+    try {
+        const restaurants = await getRestaurants();
+        res.json(restaurants);
+    } catch (error) {
+        console.error('Error fetching restaurants:', error);
+        res.status(500).send('Internal Server Error');
+    }
 });
 
-//Get Restaurant by ID
-router.get('/restaurants/:id', (req, res) => {
-    const ID = parseInt(req.params.id);
-    const restaurant = getRestaurant(ID);
-
-    if(restaurant)
-    {
-        res.json(restaurant);
-    }
-    else
-    {
-        res.status(404).json('No such restaurant found');
+router.get('/restaurants/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const restaurant = await getRestaurant(parseInt(id));
+        if (restaurant) {
+            res.json(restaurant);
+        } else {
+            res.status(404).send('Restaurant not found');
+        }
+    } catch (error) {
+        console.error('Error fetching restaurant:', error);
+        res.status(500).send('Internal Server Error');
     }
 });
 
 //Post New Restaurant
-router.post('/restaurants', (req, res) => {
+router.post('/restaurants', async (req, res) => {
     const newRestaurant = req.body;
     console.log("Received data:", req.body); 
 
-    if(newRestaurant && newRestaurant.name && newRestaurant.phone && newRestaurant.address)
-    {
-        const restaurant = createRestaurant(newRestaurant);
-        res.status(201).json(restaurant);
+    if (newRestaurant && newRestaurant.name && newRestaurant.phone && newRestaurant.address) {
+        try {
+            const restaurant = await createRestaurant(newRestaurant);
+            res.status(201).json(restaurant);
+        } catch (error) {
+            console.error('Error creating restaurant:', error);
+            res.status(500).send('Internal Server Error');
+        }
+    } else {
+        res.status(400).json({ error: 'Missing required restaurant information' });
     }
-    else{
-        res.status(404).json('Error');
-    }
-
 });
 
 //Delete Restaurant
-router.delete('/restaurants/:id', (req, res) => {
+router.delete('/restaurants/:id', async (req, res) => {
     const ID = parseInt(req.params.id);
-    const deleted = deleteRestaurant(ID);
-    console.log("deleted data:", deleted); 
+    try {
+        const deleted = await deleteRestaurant(ID);
+        console.log("Deleted data:", deleted);
 
-
-    if(deleted)
-    {
-        res.json({message: 'Restaurant deleted'});
-    }
-    else{
-        res.status(404).json('Error');
+        if (deleted) {
+            res.json({ message: 'Restaurant deleted' });
+        } else {
+            res.status(404).json({ error: 'Restaurant not found' });
+        }
+    } catch (error) {
+        console.error('Error deleting restaurant:', error);
+        res.status(500).send('Internal Server Error');
     }
 });
 
